@@ -10,6 +10,7 @@
 #include "lwip/sys.h"
 #include <esp_http_server.h>
 #include "driver/gpio.h"
+#include "esp_spiffs.h"
 
 #define ESP_WIFI_SSID      "ESP32_WebServer"   // Tên WiFi ESP32 phát ra
 #define ESP_WIFI_PASS      "12345678"          // Mật khẩu (tối thiểu 8 ký tự)
@@ -21,36 +22,67 @@
 static const char *TAG = "ap_webserver";
 
 // Trang HTML đẹp (nhúng thẳng vào firmware)
-static const char index_html[] = 
-"<!DOCTYPE html><html lang=\"vi\">"
-"<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
-"<title>ESP32 Web Control</title>"
-"<style>"
-"body{font-family:Arial;background:linear-gradient(135deg,#667eea,#764ba2);color:white;text-align:center;padding:50px;}"
-"h1{font-size:3em;margin-bottom:20px;}"
-".container{max-width:600px;margin:auto;background:rgba(255,255,255,0.1);padding:30px;border-radius:20px;}"
-".btn{display:inline-block;padding:20px 40px;margin:15px;font-size:24px;border:none;border-radius:15px;cursor:pointer;transition:0.3s;}"
-".on{background:#4CAF50;}"
-".off{background:#f44336;}"
-".btn:active{transform:scale(0.95);}"
-"#state{font-size:2em;margin:30px;}"
-"</style></head>"
-"<body>"
-"<div class=\"container\">"
-"<h1>ESP32 Web Server</h1>"
-"<p>Trạng thái LED: <span id=\"state\">Đang tải...</span></p>"
-"<button class=\"btn on\" onclick=\"send('/on')\">BẬT LED</button>"
-"<button class=\"btn off\" onclick=\"send('/off')\">TẮT LED</button>"
-"</div>"
-"<script>"
-"function send(cmd){fetch(cmd).then(()=>updateState());}"
-"function updateState(){"
-"  fetch('/state').then(r=>r.text()).then(s=>{document.getElementById('state').innerText=s;});"
-"}"
-// Cập nhật trạng thái mỗi 2 giây
-"setInterval(updateState,2000); updateState();"
-"</script>"
-"</body></html>";
+// static const char index_html[] = 
+// "<!DOCTYPE html><html lang=\"vi\">"
+// "<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
+// "<title>ESP32 Web Control</title>"
+// "<style>"
+// "body{font-family:Arial;background:linear-gradient(135deg,#667eea,#764ba2);color:white;text-align:center;padding:50px;}"
+// "h1{font-size:3em;margin-bottom:20px;}"
+// ".container{max-width:600px;margin:auto;background:rgba(255,255,255,0.1);padding:30px;border-radius:20px;}"
+// ".btn{display:inline-block;padding:20px 40px;margin:15px;font-size:24px;border:none;border-radius:15px;cursor:pointer;transition:0.3s;}"
+// ".on{background:#4CAF50;}"
+// ".off{background:#f44336;}"
+// ".btn:active{transform:scale(0.95);}"
+// "#state{font-size:2em;margin:30px;}"
+// "</style></head>"
+// "<body>"
+// "<div class=\"container\">"
+// "<h1>ESP32 Web Server</h1>"
+// "<p>Trạng thái LED: <span id=\"state\">Đang tải...</span></p>"
+// "<button class=\"btn on\" onclick=\"send('/on')\">BẬT LED</button>"
+// "<button class=\"btn off\" onclick=\"send('/off')\">TẮT LED</button>"
+// "</div>"
+// "<script>"
+// "function send(cmd){fetch(cmd).then(()=>updateState());}"
+// "function updateState(){"
+// "  fetch('/state').then(r=>r.text()).then(s=>{document.getElementById('state').innerText=s;});"
+// "}"
+// // Cập nhật trạng thái mỗi 2 giây
+// "setInterval(updateState,2000); updateState();"
+// "</script>"
+// "</body></html>";
+
+#define INDEX_HTML_PATH "/spiffs/index.html"
+
+char index_html[4096];
+static uint8_t led_state = 0;
+// Khởi tạo SPIFFS và nạp trang HTML từ hệ thống file
+static void init_web_page_buffer(void)
+{
+    esp_vfs_spiffs_conf_t conf = {
+        .base_path = "/spiffs",
+        .partition_label = NULL,
+        .max_files = 5,
+        .format_if_mount_failed = true};
+
+    ESP_ERROR_CHECK(esp_vfs_spiffs_register(&conf));
+
+    memset((void *)index_html, 0, sizeof(index_html));
+    struct stat st;
+    if (stat(INDEX_HTML_PATH, &st))
+    {
+        ESP_LOGE(TAG, "index.html not found");
+        return;
+    }
+
+    FILE *fp = fopen(INDEX_HTML_PATH, "r");
+    if (fread(index_html, st.st_size, 1, fp) == 0)
+    {
+        ESP_LOGE(TAG, "fread failed");
+    }
+    fclose(fp);
+}
 
 /* Handler trang chủ */
 static esp_err_t root_get_handler(httpd_req_t *req)
@@ -64,6 +96,7 @@ static esp_err_t root_get_handler(httpd_req_t *req)
 static esp_err_t led_on_handler(httpd_req_t *req)
 {
     gpio_set_level(LED_GPIO, 1);
+    led_state = 1;
     httpd_resp_send(req, "OK", HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
@@ -72,6 +105,7 @@ static esp_err_t led_on_handler(httpd_req_t *req)
 static esp_err_t led_off_handler(httpd_req_t *req)
 {
     gpio_set_level(LED_GPIO, 0);
+    led_state = 0;
     httpd_resp_send(req, "OK", HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
@@ -79,13 +113,9 @@ static esp_err_t led_off_handler(httpd_req_t *req)
 /* Trả về trạng thái hiện tại */
 static esp_err_t state_handler(httpd_req_t *req)
 {
-    const char *state = gpio_get_level(LED_GPIO) ? "BẬT" : "TẮT";
-    if(gpio_get_level(LED_GPIO)) {
-        ESP_LOGI(TAG, "LED state requested: BẬT");
-    } else {
-        ESP_LOGI(TAG, "LED state requested: TẮT");
-    }
-    // ESP_LOGI(TAG, "LED state requested: %s", state);
+    const char *state = led_state ? "BẬT" : "TẮT";
+    
+    ESP_LOGI(TAG, "LED state requested: %s", state);
     httpd_resp_send(req, state, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
@@ -178,6 +208,7 @@ static void init_led(void)
     gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT);
     gpio_set_pull_mode(LED_GPIO, GPIO_FLOATING);
     gpio_set_level(LED_GPIO, 0);
+    led_state = 0;
 }
 
 void app_main(void)
@@ -193,5 +224,6 @@ void app_main(void)
     // LED + Web server
     init_led();
     wifi_init_softap();
+    init_web_page_buffer();
     start_webserver();
 }

@@ -1,0 +1,70 @@
+<style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-align: center;
+            padding: 50px 20px;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .btn {
+            display: inline-block;
+            padding: 20px 50px;
+            margin: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 180px;
+        }
+        .on {
+            background: #4CAF50;
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+        }
+        .off {
+            background: #f44336;
+            box-shadow: 0 8px 20px rgba(244, 67, 54, 0.4);
+        }
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        #state {
+            font-size: 2.2em;
+            margin: 40px 0;
+            font-weight: bold;
+            text-shadow: 0 3px 8px rgba(0,0,0,0.5);
+        }
+        .loading {
+            color: #ffeb3b;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+    </style>

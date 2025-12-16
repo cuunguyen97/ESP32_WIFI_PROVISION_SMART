@@ -3,17 +3,529 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP32 Web Control</title>
+    <title>Cấu hình WiFi ESP</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #1e1e2f, #2a1b3d);
+            --card-bg: rgba(30, 30, 47, 0.95);
+            --text: #e0e0ff;
+            --accent: #a29bfe;
+            --success: #4ade80;
+            --error: #f87171;
+            --input-bg: #2d2d44;
+            --border: #44475a;
+        }
+        [data-theme="light"] {
+            --bg-gradient: linear-gradient(135deg, #667eea, #764ba2);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text: #333;
+            --accent: #667eea;
+            --input-bg: #fff;
+            --border: #ddd;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text);
+            transition: all 0.5s;
+        }
+        .container {
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { margin-bottom: 10px; color: var(--accent); }
+
+        /* NÚT GẠT SÁNG/TỐI */
+        .theme-switch-wrapper {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            user-select: none;
+        }
+        .theme-switch {
+            display: inline-block;
+            position: relative;
+            width: 56px;
+            height: 30px;
+        }
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #44475a;
+            transition: .4s;
+            border-radius: 30px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .slider:after {
+            content: '🌙';
+            color: #fff;
+            position: absolute;
+            top: 50%;
+            left: 8px;
+            transform: translateY(-50%);
+            font-size: 16px;
+            transition: .4s;
+        }
+        input:checked + .slider:after {
+            content: '☀️';
+            left: 30px;
+        }
+
+        /* CUSTOM DROPDOWN WIFI */
+        .wifi-dropdown {
+            position: relative;
+            width: 100%;
+            margin: 12px 0;
+        }
+        .dropdown-header {
+            width: 100%;
+            padding: 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        .dropdown-header:hover { border-color: var(--accent); }
+        .dropdown-header::after {
+            content: '▼';
+            font-size: 12px;
+            color: var(--accent);
+            transition: transform 0.3s;
+        }
+        .dropdown-header.open::after {
+            transform: rotate(180deg);
+        }
+        .dropdown-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .dropdown-list.open {
+            display: block;
+        }
+        .dropdown-item {
+            padding: 12px 14px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .dropdown-item:hover {
+            background-color: rgba(162, 155, 254, 0.1);
+        }
+        .dropdown-item:last-child {
+            border-bottom: none;
+            border-radius: 0 0 10px 10px;
+        }
+        .dropdown-item.selected {
+            background-color: rgba(162, 155, 254, 0.2);
+        }
+        .network-name {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .network-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 14px;
+            margin: 12px 0;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        button:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(162, 155, 254, 0.6); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        #refreshBtn {
+            background: #44475a;
+            font-size: 14px;
+            padding: 10px;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 18px;
+            animation: fadeIn 0.8s;
+            display: none;
+        }
+        .success {
+            background: rgba(74, 222, 128, 0.2);
+            border: 2px solid var(--success);
+            color: var(--success);
+        }
+        .error {
+            background: rgba(248, 113, 113, 0.2);
+            border: 2px solid var(--error);
+            color: var(--error);
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        /* SCAN LOADING */
+        #scanLoading {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0;
+            gap: 15px;
+            color: var(--accent);
+            font-size: 18px;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #connectingSection .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        /* WIFI SIGNAL BARS */
+        .wifi-bars {
+            display: inline-flex;
+            align-items: end;
+            gap: 2px;
+            height: 20px;
+            vertical-align: middle;
+        }
+        .wifi-bars .bar {
+            width: 4px;
+            border-radius: 2px;
+            background-color: rgba(128, 128, 128, 0.4);
+            transition: all 0.3s;
+        }
+        .wifi-bars.signal-low .bar.active { background-color: #ff6b6b; }
+        .wifi-bars.signal-medium .bar.active { background-color: #ffd93d; }
+        .wifi-bars.signal-high .bar.active { background-color: #51cf66; }
+
+        .bar1 { height: 6px; }
+        .bar2 { height: 10px; }
+        .bar3 { height: 14px; }
+        .bar4 { height: 20px; }
+
+        footer { margin-top: 30px; font-size: 14px; opacity: 0.8; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>ESP32 Control</h1>
-        <p>Trạng thái LED: <span id="state" class="loading">Đang tải...</span></p>
-        
-        <button class="btn on" onclick="send('/on')">BẬT LED</button>
-        <button class="btn off" onclick="send('/off')">TẮT LED</button>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch">
+            <input type="checkbox" id="themeCheckbox" onchange="toggleTheme()">
+            <div class="slider"></div>
+        </label>
     </div>
 
-    
+    <div class="container">
+        <h1>📶 Cấu hình WiFi</h1>
+        <p id="subtitle">Chọn mạng và nhập mật khẩu</p>
+        <div id="formSection">
+            <button id="refreshBtn" onclick="refreshWiFi()">🔄 Làm mới danh sách</button>
+
+            <div id="scanLoading">
+                <div class="spinner"></div>
+                Đang quét WiFi...
+            </div>
+
+            <form id="wifiForm">
+                <div class="wifi-dropdown">
+                    <div class="dropdown-header" onclick="toggleDropdown()">
+                        <span id="selectedNetwork">-- Chọn mạng WiFi --</span>
+                        <span></span>
+                    </div>
+                    <div class="dropdown-list" id="wifiList">
+                        <!-- Danh sách sẽ được tạo bằng JS -->
+                    </div>
+                </div>
+                <input type="password" name="pass" id="passwordInput" placeholder="Mật khẩu WiFi" required>
+                <button type="submit" id="connectBtn" disabled>Kết nối</button>
+            </form>
+        </div>
+
+        <div id="connectingSection" class="loading-spinner" style="display:none;">
+            <div class="spinner"></div>
+            <p>Đang kết nối đến WiFi...</p>
+        </div>
+
+        <div id="statusSection" class="status">
+            <div class="icon" id="statusIcon"></div>
+            <div id="statusMessage"></div>
+            <button id="retryBtn" onclick="retry()" style="margin-top:20px; background:#555;">🔄 Thử lại</button>
+        </div>
+        <footer>Thiết bị ESP - Chế độ cấu hình</footer>
+    </div>
+
+    <script>
+        let selectedSSID = '';
+        let networks = [];
+
+        function toggleTheme() {
+            const body = document.body;
+            const checkbox = document.getElementById('themeCheckbox');
+            if (checkbox.checked) {
+                body.setAttribute('data-theme', 'light');
+            } else {
+                body.removeAttribute('data-theme');
+            }
+        }
+
+        window.addEventListener('load', () => {
+            const checkbox = document.getElementById('themeCheckbox');
+            if (document.body.hasAttribute('data-theme')) {
+                checkbox.checked = true;
+            }
+            updateWiFiList();
+        });
+
+        function createBars(level) {
+            let signalClass = '';
+            if (level <= 1) signalClass = 'signal-low';
+            else if (level <= 2) signalClass = 'signal-medium';
+            else signalClass = 'signal-high';
+            let barsHTML = `<div class="wifi-bars ${signalClass}">`;
+            for (let i = 1; i <= 4; i++) {
+                barsHTML += `<div class="bar bar${i} ${i <= level ? 'active' : ''}"></div>`;
+            }
+            barsHTML += '</div>';
+            return barsHTML;
+        }
+
+        function updateWiFiList() {
+            const wifiList = document.getElementById('wifiList');
+            wifiList.innerHTML = '<div style="padding:12px">Đang quét WiFi...</div>';
+            fetch('/scan')
+                .then(r => r.json())
+                .then(data => {
+                    networks = data;
+                    wifiList.innerHTML = '';
+                    if (!networks.length) {
+                        wifiList.innerHTML = '<div style="padding:12px">Không tìm thấy mạng WiFi nào</div>';
+                        return;
+                    }
+                    networks.forEach((net, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'dropdown-item';
+                        item.innerHTML = `
+                            <span class="network-name">${net.ssid}</span>
+                            <span class="network-info">
+                                ${createBars(net.level)}
+                                <span>(${net.dbm}dBm)</span>
+                            </span>
+                        `;
+                        item.onclick = () => selectNetwork(net.ssid, index);
+                        wifiList.appendChild(item);
+                    });
+                    document.getElementById('selectedNetwork').textContent = '-- Chọn mạng WiFi --';
+                    selectedSSID = '';
+                    document.getElementById('connectBtn').disabled = true;
+                })
+                .catch(() => {
+                    wifiList.innerHTML = '<div style="padding:12px">Không lấy được danh sách WiFi</div>';
+                });
+        }
+
+        function selectNetwork(ssid, index) {
+            selectedSSID = ssid;
+            document.getElementById('selectedNetwork').textContent = ssid;
+            document.getElementById('connectBtn').disabled = false;
+            document.querySelectorAll('.dropdown-item').forEach((item, i) => {
+                item.classList.toggle('selected', i === index);
+            });
+            document.querySelector('.dropdown-list').classList.remove('open');
+            document.querySelector('.dropdown-header').classList.remove('open');
+        }
+
+        function toggleDropdown() {
+            const header = document.querySelector('.dropdown-header');
+            const list = document.querySelector('.dropdown-list');
+            header.classList.toggle('open');
+            list.classList.toggle('open');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.wifi-dropdown')) {
+                document.querySelector('.dropdown-list').classList.remove('open');
+                document.querySelector('.dropdown-header').classList.remove('open');
+            }
+        });
+
+        function refreshWiFi() {
+            updateWiFiList();
+        }
+
+        document.getElementById('wifiForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!selectedSSID) return;
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('connectingSection').style.display = 'flex';
+            document.getElementById('connectingSection').style.flexDirection = 'column';
+            document.getElementById('connectingSection').style.alignItems = 'center';
+            const pass = document.getElementById('passwordInput').value;
+            fetch('/connect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ssid: selectedSSID, pass })
+            })
+            .then(r => r.json())
+            .then(() => {
+                setTimeout(checkStatus, 2000);
+            })
+            .catch(() => {
+                document.getElementById('connectingSection').style.display = 'none';
+                document.getElementById('statusSection').style.display = 'block';
+                document.getElementById('statusSection').className = 'status error';
+                document.getElementById('statusIcon').textContent = '❌';
+                document.getElementById('statusMessage').innerHTML = '<strong>Lỗi gửi thông tin!</strong>';
+            });
+        });
+
+        function checkStatus() {
+            fetch('/status')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('connectingSection').style.display = 'none';
+                    document.getElementById('statusSection').style.display = 'block';
+                    const retryBtn = document.getElementById('retryBtn');
+                    if (data.connected) {
+                        document.getElementById('statusSection').className = 'status success';
+                        document.getElementById('statusIcon').textContent = '✅';
+                        document.getElementById('statusMessage').innerHTML = `<strong>Kết nối thành công!</strong><br>Đã kết nối với: <strong>${data.ssid}</strong>`;
+                        retryBtn.textContent = '🔄 Restart ngay';
+                        setTimeout(() => location.reload(), 10000);
+                    } else {
+                        document.getElementById('statusSection').className = 'status error';
+                        document.getElementById('statusIcon').textContent = '❌';
+                        document.getElementById('statusMessage').innerHTML = '<strong>Kết nối thất bại!</strong><br>Mật khẩu không đúng hoặc mạng không khả dụng.';
+                        retryBtn.textContent = '🔄 Thử lại';
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('connectingSection').style.display = 'none';
+                    document.getElementById('statusSection').style.display = 'block';
+                    document.getElementById('statusSection').className = 'status error';
+                    document.getElementById('statusIcon').textContent = '❌';
+                    document.getElementById('statusMessage').innerHTML = '<strong>Lỗi kiểm tra trạng thái!</strong>';
+                });
+        }
+
+        function retry() {
+            const retryBtn = document.getElementById('retryBtn');
+            if (retryBtn.textContent.includes('Restart')) {
+                fetch('/apoff', { method: 'POST' })
+                    .then(() => location.reload());
+            } else {
+                document.getElementById('statusSection').style.display = 'none';
+                document.getElementById('formSection').style.display = 'block';
+            }
+        }
+
+        setInterval(refreshWiFi, 30000);
+    </script>
 </body>
 </html>

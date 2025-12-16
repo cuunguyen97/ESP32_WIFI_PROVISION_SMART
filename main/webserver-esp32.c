@@ -11,6 +11,7 @@
 #include <esp_http_server.h>
 #include "driver/gpio.h"
 #include "esp_spiffs.h"
+#include "wifi_config_portal.h"
 
 #define ESP_WIFI_SSID      "ESP32_WebServer"   // Tên WiFi ESP32 phát ra
 #define ESP_WIFI_PASS      "12345678"          // Mật khẩu (tối thiểu 8 ký tự)
@@ -55,7 +56,7 @@ static const char *TAG = "ap_webserver";
 
 #define INDEX_HTML_PATH "/spiffs/index.html"
 
-char index_html[4096];
+char index_html[20*1024];
 static uint8_t led_state = 0;
 // Khởi tạo SPIFFS và nạp trang HTML từ hệ thống file
 static void init_web_page_buffer(void)
@@ -77,6 +78,10 @@ static void init_web_page_buffer(void)
     }
 
     FILE *fp = fopen(INDEX_HTML_PATH, "r");
+    if (fp == NULL) {
+        ESP_LOGE(TAG, "Failed to open index.html");
+        return;
+    }
     if (fread(index_html, st.st_size, 1, fp) == 0)
     {
         ESP_LOGE(TAG, "fread failed");
@@ -161,17 +166,14 @@ static httpd_handle_t start_webserver(void)
         httpd_register_uri_handler(server, &on);
         httpd_register_uri_handler(server, &off);
         httpd_register_uri_handler(server, &state);
+        wifi_portal_register_handlers(server); // Đăng ký các API WiFi portal chỉ ở đây
         ESP_LOGI(TAG, "Web server started");
     }
     return server;
 }
 
-static void wifi_init_softap(void)
+static void wifi_init_apsta(void)
 {
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-    esp_netif_create_default_wifi_ap();
-
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
@@ -187,17 +189,15 @@ static void wifi_init_softap(void)
                 .required = false,
             },
         },
+        // .sta sẽ được cấu hình sau khi user nhập thông tin
     };
-
     if (strlen(ESP_WIFI_PASS) == 0) {
         wifi_config.ap.authmode = WIFI_AUTH_OPEN;
     }
-
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
-
-    ESP_LOGI(TAG, "WiFi SoftAP started");
+    ESP_LOGI(TAG, "WiFi AP+STA started");
     ESP_LOGI(TAG, "SSID: %s  Password: %s", ESP_WIFI_SSID, ESP_WIFI_PASS);
     ESP_LOGI(TAG, "Mở trình duyệt → gõ: 192.168.4.1");
 }
@@ -221,9 +221,15 @@ void app_main(void)
     }
     ESP_ERROR_CHECK(ret);
 
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    esp_netif_create_default_wifi_ap();
+    esp_netif_create_default_wifi_sta();
+
     // LED + Web server
     init_led();
-    wifi_init_softap();
+    wifi_init_apsta();
     init_web_page_buffer();
-    start_webserver();
+    httpd_handle_t server = start_webserver();
+    // KHÔNG gọi wifi_portal_register_handlers(server) ở đây nữa
 }

@@ -56,7 +56,7 @@ static const char *TAG = "ap_webserver";
 
 #define INDEX_HTML_PATH "/spiffs/index.html"
 
-char index_html[20*1024];
+char index_html[30*1024];
 static uint8_t led_state = 0;
 // Khởi tạo SPIFFS và nạp trang HTML từ hệ thống file
 static void init_web_page_buffer(void)

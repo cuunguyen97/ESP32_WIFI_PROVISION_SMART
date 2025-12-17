@@ -5,25 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cấu hình WiFi ESP</title>
     <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #1e1e2f, #2a1b3d);
-            --card-bg: rgba(30, 30, 47, 0.95);
-            --text: #e0e0ff;
-            --accent: #a29bfe;
-            --success: #4ade80;
-            --error: #f87171;
-            --input-bg: #2d2d44;
-            --border: #44475a;
+        :root {/* Định nghĩa các biến CSS (custom properties) cho chế độ tối (mặc định) */
+            --bg-gradient: linear-gradient(135deg, #1e1e2f, #2a1b3d);/* Màu nền gradient.*/
+            --card-bg: rgba(30, 30, 47, 0.95);/*Nền thẻ chính.*/
+            --text: #e0e0ff;/*Màu chữ.*/
+            --accent: #a29bfe;/*Màu nhấn.*/
+            --success: #4ade80;/*Màu thành công.*/
+            --error: #f87171;/*Màu lỗi.*/
+            --input-bg: #2d2d44;/*Nền input.*/
+            --border: #44475a;/*Màu viền.*/
         }
-        [data-theme="light"] {
-            --bg-gradient: linear-gradient(135deg, #667eea, #764ba2);
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --text: #333;
-            --accent: #667eea;
-            --input-bg: #fff;
-            --border: #ddd;
+        [data-theme="light"] {/* Định nghĩa các biến CSS (custom properties) cho chế độ sáng */
+            --bg-gradient: linear-gradient(135deg, #667eea, #764ba2);/* Màu nền gradient.*/
+            --card-bg: rgba(255, 255, 255, 0.95);/*Nền thẻ chính.*/
+            --text: #333;/*Màu chữ.*/
+            --accent: #667eea;/*Màu nhấn.*/
+            --input-bg: #fff;/*Nền input.*/
+            --border: #ddd;/*Màu viền.*/
         }
-        body {
+        body {/*Đặt font chữ, nền gradient, căn giữa nội dung, màu chữ, và hiệu ứng chuyển đổi mượt mà khi thay đổi theme.*/
             font-family: 'Segoe UI', sans-serif;
             background: var(--bg-gradient);
             min-height: 100vh;
@@ -35,283 +35,285 @@
             transition: all 0.5s;
         }
         .container {
-            background: var(--card-bg);
-            padding: 40px 30px;
-            border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-            width: 90%;
-            max-width: 420px;
-            text-align: center;
-            animation: fadeIn 1s ease-out;
-            backdrop-filter: blur(10px);
-            position: relative;
+            /* Thẻ bao ngoài cùng (thẻ chính của trang).
+                Nền mờ (backdrop-filter), padding, bo góc, bóng đổ, hiệu ứng fadeIn khi tải trang. */
+            background: var(--card-bg);/*Nền thẻ chính.*/
+            padding: 40px 30px;/*Padding cho thẻ chính.*/
+            border-radius: 20px;/*Bo góc cho thẻ chính.*/
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);/*Bóng đổ cho thẻ chính.*/
+            width: 90%;/* Chiều rộng 90% của khung nhìn.*/
+            max-width: 420px;/* Chiều rộng tối đa 420px.*/
+            text-align: center;/*Căn giữa nội dung bên trong thẻ.*/
+            animation: fadeIn 1s ease-out;/*Hiệu ứng fadeIn khi tải trang.*/
+            backdrop-filter: blur(10px);/*Nền mờ phía sau thẻ chính.*/
+            position: relative;/*Đặt vị trí tương đối để chứa nút chuyển đổi theme.*/
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes fadeIn {/*Định nghĩa hiệu ứng fadeIn.*/
+            from { opacity: 0; transform: translateY(30px); }/*Bắt đầu từ mờ và dịch xuống 30px.*/
+            to { opacity: 1; transform: translateY(0); }/*Kết thúc ở trạng thái bình thường.*/
         }
-        h1 { margin-bottom: 10px; color: var(--accent); }
+        h1 { margin-bottom: 10px; color: var(--accent); }/*Tiêu đề chính với màu nhấn và khoảng cách dưới.*/
 
         /* NÚT GẠT SÁNG/TỐI */
-        .theme-switch-wrapper {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            user-select: none;
+        .theme-switch-wrapper {/* Vị trí của nút chuyển đổi theme ở góc trên bên phải.*/
+            position: absolute;/*Đặt vị trí tuyệt đối để đặt nút ở góc trên bên phải.*/
+            top: 20px;/*Cách mép trên 20px.*/
+            right: 20px;/*Cách mép phải 20px.*/
+            display: flex;/*Hiển thị dưới dạng flexbox.*/
+            align-items: center;/*Căn giữa theo chiều dọc.*/
+            gap: 10px;/*Khoảng cách giữa các phần tử con.*/
+            font-size: 14px;/*Kích thước chữ.*/
+            user-select: none;/*Ngăn chặn việc chọn văn bản.*/
         }
-        .theme-switch {
-            display: inline-block;
-            position: relative;
-            width: 56px;
-            height: 30px;
+        .theme-switch {/*Nút chuyển đổi theme.*/
+            display: inline-block; /*Hiển thị dưới dạng khối nội tuyến.*/
+            position: relative; /*Đặt vị trí tương đối để chứa các phần tử con.*/
+            width: 56px; /*Chiều rộng của nút.*/
+            height: 30px; /*Chiều cao của nút.*/
         }
-        .theme-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
+        .theme-switch input { /*Ẩn checkbox thực tế.*/
+            opacity: 0; /*Ẩn checkbox.*/
+            width: 0;/*Đặt chiều rộng bằng 0.*/
+            height: 0;/*Đặt chiều cao bằng 0.*/
         }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #44475a;
-            transition: .4s;
-            border-radius: 30px;
+        .slider { /*Thanh trượt của nút chuyển đổi theme.*/
+            position: absolute; /*Đặt vị trí tuyệt đối để lấp đầy nút.*/
+            cursor: pointer; /*Hiển thị con trỏ khi di chuột qua.*/
+            top: 0; /*Cách mép trên 0px.*/
+            left: 0; /*Cách mép trái 0px.*/
+            right: 0; /*Cách mép phải 0px.*/
+            bottom: 0;/*Cách mép dưới 0px.*/
+            background-color: #44475a; /*Màu nền mặc định.*/
+            transition: .4s; /*Hiệu ứng chuyển đổi mượt mà.*/
+            border-radius: 30px; /*Bo góc tròn cho thanh trượt.*/
         }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        .slider:before { /*Nút tròn bên trong thanh trượt.*/
+            position: absolute; /*Đặt vị trí tuyệt đối để định vị nút tròn.*/
+            content: ""; /*Nội dung rỗng để tạo phần tử.*/
+            height: 22px; /*Chiều cao của nút tròn.*/
+            width: 22px; /*Chiều rộng của nút tròn.*/
+            left: 4px; /*Cách mép trái 4px.*/
+            bottom: 4px; /*Cách mép dưới 4px.*/
+            background-color: white; /*Màu nền trắng cho nút tròn.*/
+            transition: .4s; /*Hiệu ứng chuyển đổi mượt mà.*/
+            border-radius: 50%; /*Bo tròn nút tròn.*/
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3); /*Bóng đổ cho nút tròn.*/
         }
-        input:checked + .slider {
-            background-color: var(--accent);
+        input:checked + .slider { /*Khi checkbox được chọn, thay đổi màu nền của thanh trượt.*/
+            background-color: var(--accent); /*Màu nền khi bật chế độ sáng.*/
         }
-        input:checked + .slider:before {
-            transform: translateX(26px);
+        input:checked + .slider:before { /*Khi checkbox được chọn, di chuyển nút tròn sang phải.*/
+            transform: translateX(26px); /*Dịch chuyển nút tròn sang phải.*/
         }
-        .slider:after {
-            content: '🌙';
-            color: #fff;
-            position: absolute;
-            top: 50%;
-            left: 8px;
-            transform: translateY(-50%);
-            font-size: 16px;
-            transition: .4s;
+        .slider:after { /*Biểu tượng mặt trăng và mặt trời trên thanh trượt.*/
+            content: '🌙'; /*Biểu tượng mặt trăng.*/
+            color: #fff; /*Màu trắng cho biểu tượng.*/
+            position: absolute; /*Đặt vị trí tuyệt đối để định vị biểu tượng.*/
+            top: 50%; /*Căn giữa theo chiều dọc.*/
+            left: 8px; /*Cách mép trái 8px.*/
+            transform: translateY(-50%); /*Dịch chuyển lên để căn giữa chính xác.*/
+            font-size: 16px; /*Kích thước chữ cho biểu tượng.*/
+            transition: .4s; /*Hiệu ứng chuyển đổi mượt mà.*/
         }
-        input:checked + .slider:after {
-            content: '☀️';
-            left: 30px;
+        input:checked + .slider:after { /*Khi checkbox được chọn, thay đổi biểu tượng thành mặt trời.*/
+            content: '☀️'; /*Biểu tượng mặt trời.*/
+            left: 30px; /*Cách mép trái 30px.*/
         }
 
         /* CUSTOM DROPDOWN WIFI */
-        .wifi-dropdown {
-            position: relative;
-            width: 100%;
-            margin: 12px 0;
+        .wifi-dropdown {/*Container cho dropdown WiFi.*/
+            position: relative; /*Đặt vị trí tương đối để chứa các phần tử con tuyệt đối.*/
+            width: 100%; /*Chiều rộng 100% của container.*/
+            margin: 12px 0; /*Khoảng cách trên dưới 12px.*/
         }
-        .dropdown-header {
-            width: 100%;
-            padding: 14px;
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--text);
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-sizing: border-box;
-            transition: border-color 0.3s;
+        .dropdown-header { /*Phần hiển thị mạng WiFi đã chọn.*/
+            width: 100%; /*Chiều rộng 100% của header.*/
+            padding: 14px; /*Khoảng cách bên trong 14px.*/
+            background: var(--input-bg); /*Nền input.*/
+            border: 1px solid var(--border); /*Viền của header.*/
+            border-radius: 10px; /*Bo góc cho header.*/
+            color: var(--text); /*Màu chữ.*/
+            font-size: 16px; /*Kích thước chữ.*/
+            cursor: pointer; /*Hiển thị con trỏ khi di chuột qua.*/
+            display: flex; /*Hiển thị dưới dạng flexbox.*/
+            align-items: center; /*Căn giữa theo chiều dọc.*/
+            justify-content: space-between; /*Căn đều hai bên.*/
+            box-sizing: border-box; /*Đảm bảo padding và border không làm thay đổi kích thước.*/
+            transition: border-color 0.3s; /*Hiệu ứng chuyển đổi màu viền.*/
         }
-        .dropdown-header:hover { border-color: var(--accent); }
-        .dropdown-header::after {
-            content: '▼';
-            font-size: 12px;
-            color: var(--accent);
-            transition: transform 0.3s;
+        .dropdown-header:hover { border-color: var(--accent); } /*Thay đổi màu viền khi hover.*/
+        .dropdown-header::after { /*Mũi tên chỉ xuống.*/
+            content: '▼'; /*Biểu tượng mũi tên.*/
+            font-size: 12px; /*Kích thước chữ cho mũi tên.*/
+            color: var(--accent); /*Màu của mũi tên.*/
+            transition: transform 0.3s; /*Hiệu ứng chuyển đổi khi mở dropdown.*/
         }
-        .dropdown-header.open::after {
-            transform: rotate(180deg);
+        .dropdown-header.open::after { /*Khi dropdown mở, xoay mũi tên lên trên.*/
+            transform: rotate(180deg); /*Xoay mũi tên 180 độ.*/
         }
-        .dropdown-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            border-top: none;
-            border-radius: 0 0 10px 10px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        .dropdown-list { /*Danh sách các mạng WiFi.*/
+            position: absolute; /*Đặt vị trí tuyệt đối để hiển thị bên dưới header.*/
+            top: 100%; /*Đặt ngay dưới header.*/
+            left: 0; /*Cách mép trái 0.*/
+            right: 0; /*Cách mép phải 0.*/
+            background: var(--input-bg); /*Nền input.*/
+            border: 1px solid var(--border); /*Viền của danh sách.*/
+            border-top: none; /*Loại bỏ viền trên để nối với header.*/
+            border-radius: 0 0 10px 10px; /*Bo góc dưới cho danh sách.*/
+            max-height: 200px; /*Chiều cao tối đa 200px.*/
+            overflow-y: auto; /*Cuộn dọc nếu danh sách quá dài.*/
+            z-index: 1000; /*Đảm bảo danh sách hiển thị trên các phần tử khác.*/
+            display: none; /*Ẩn danh sách mặc định.*/
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); /*Bóng đổ cho danh sách.*/
         }
-        .dropdown-list.open {
-            display: block;
+        .dropdown-list.open { /*Khi dropdown mở, hiển thị danh sách.*/
+            display: block; /*Hiển thị danh sách.*/
         }
-        .dropdown-item {
-            padding: 12px 14px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: background-color 0.2s;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .dropdown-item { /*Mỗi mục trong danh sách mạng WiFi.*/
+            padding: 12px 14px; /*Khoảng cách bên trong cho mỗi mục.*/
+            cursor: pointer; /*Hiển thị con trỏ khi di chuột qua.*/
+            border-bottom: 1px solid var(--border); /*Viền dưới cho mỗi mục.*/
+            display: flex; /*Hiển thị dưới dạng flexbox.*/
+            align-items: center; /*Căn giữa theo chiều dọc.*/
+            justify-content: space-between; /*Căn đều hai bên.*/
+            transition: background-color 0.2s; /*Hiệu ứng chuyển đổi màu nền.*/
+            white-space: nowrap; /*Không cho phép xuống dòng.*/
+            overflow: hidden; /*Ẩn phần nội dung tràn.*/
+            text-overflow: ellipsis; /*Hiệu ứng ba chấm cho nội dung tràn.*/
         }
-        .dropdown-item:hover {
-            background-color: rgba(162, 155, 254, 0.1);
+        .dropdown-item:hover { /*Thay đổi màu nền khi hover.*/
+            background-color: rgba(162, 155, 254, 0.1); /*Màu nền khi hover.*/
         }
-        .dropdown-item:last-child {
-            border-bottom: none;
-            border-radius: 0 0 10px 10px;
+        .dropdown-item:last-child { /*Loại bỏ viền dưới cho mục cuối cùng.*/
+            border-bottom: none; /*Không có viền dưới.*/
+            border-radius: 0 0 10px 10px; /*Bo góc dưới cho mục cuối cùng.*/
         }
-        .dropdown-item.selected {
-            background-color: rgba(162, 155, 254, 0.2);
+        .dropdown-item.selected { /*Khi mục được chọn.*/
+            background-color: rgba(162, 155, 254, 0.2); /*Màu nền cho mục được chọn.*/
         }
-        .network-name {
-            flex: 1;
-            margin-right: 10px;
+        .network-name { /*Tên mạng WiFi.*/
+            flex: 1; /*Chiếm toàn bộ không gian có sẵn.*/
+            margin-right: 10px; /*Khoảng cách bên phải 10px.*/
         }
-        .network-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            opacity: 0.8;
+        .network-info { /*Thông tin tín hiệu và dBm.*/
+            display: flex; /*Hiển thị dưới dạng flexbox.*/
+            align-items: center; /*Căn giữa theo chiều dọc.*/
+            gap: 8px; /*Khoảng cách giữa các phần tử con.*/
+            font-size: 14px; /*Kích thước chữ.*/
+            opacity: 0.8; /*Độ mờ cho thông tin.*/
         }
 
-        input[type="password"] {
-            width: 100%;
-            padding: 14px;
-            margin: 12px 0;
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--text);
-            font-size: 16px;
-            box-sizing: border-box;
+        input[type="password"] { /*Input mật khẩu WiFi.*/
+            width: 100%; /*Chiều rộng 100% của input.*/
+            padding: 14px; /*Khoảng cách bên trong 14px.*/
+            margin: 12px 0; /*Khoảng cách trên dưới 12px.*/
+            background: var(--input-bg); /*Nền input.*/
+            border: 1px solid var(--border); /*Viền của input.*/
+            border-radius: 10px; /*Bo góc cho input.*/
+            color: var(--text); /*Màu chữ.*/
+            font-size: 16px; /*Kích thước chữ.*/
+            box-sizing: border-box; /*Đảm bảo padding và border không làm thay đổi kích thước*/
         }
-        button {
-            width: 100%;
-            padding: 16px;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: all 0.3s;
+        button { /*Nút kết nối WiFi.*/
+            width: 100%; /*Chiều rộng 100% của nút.*/
+            padding: 16px; /*Khoảng cách bên trong 16px.*/
+            background: var(--accent); /*Màu nền nhấn.*/
+            color: white; /*Màu chữ trắng.*/
+            border: none; /*Loại bỏ viền.*/
+            border-radius: 10px; /*Bo góc cho nút.*/
+            font-size: 18px; /*Kích thước chữ.*/
+            cursor: pointer; /*Hiển thị con trỏ khi di chuột qua.*/
+            margin-top: 20px; /*Khoảng cách trên 20px.*/
+            transition: all 0.3s; /*Hiệu ứng chuyển đổi mượt mà*/
         }
-        button:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(162, 155, 254, 0.6); }
-        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        #refreshBtn {
-            background: #44475a;
-            font-size: 14px;
-            padding: 10px;
+        button:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(162, 155, 254, 0.6); } /*Hiệu ứng khi hover.*/
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; } /*Trạng thái disabled.*/
+        #refreshBtn { /*Nút làm mới danh sách WiFi.*/
+            background: #44475a; /*Màu nền mặc định.*/
+            font-size: 14px; /*Kích thước chữ.*/
+            padding: 10px; /*Khoảng cách bên trong.*/
         }
-        .status {
-            margin: 20px 0;
-            padding: 20px;
-            border-radius: 12px;
-            font-size: 18px;
-            animation: fadeIn 0.8s;
-            display: none;
+        .status { /*Phần hiển thị trạng thái kết nối.*/
+            margin: 20px 0; /*Khoảng cách trên dưới 20px.*/
+            padding: 20px; /*Khoảng cách bên trong 20px.*/
+            border-radius: 12px; /*Bo góc cho phần trạng thái.*/
+            font-size: 18px; /*Kích thước chữ.*/
+            animation: fadeIn 0.8s; /*Hiệu ứng fadeIn khi hiển thị.*/
+            display: none; /*Ẩn mặc định.*/
         }
-        .success {
-            background: rgba(74, 222, 128, 0.2);
-            border: 2px solid var(--success);
-            color: var(--success);
+        .success { /*Trạng thái kết nối thành công.*/
+            background: rgba(74, 222, 128, 0.2); /*Nền xanh nhạt.*/
+            border: 2px solid var(--success); /*Viền xanh.*/
+            color: var(--success); /*Chữ xanh.*/
         }
         .error {
-            background: rgba(248, 113, 113, 0.2);
-            border: 2px solid var(--error);
-            color: var(--error);
+            background: rgba(248, 113, 113, 0.2); /*Nền đỏ nhạt.*/
+            border: 2px solid var(--error); /*Viền đỏ.*/
+            color: var(--error); /*Chữ đỏ.*/
         }
-        .icon {
-            font-size: 48px;
-            margin-bottom: 10px;
+        .icon { /*Biểu tượng trạng thái.*/
+            font-size: 48px; /*Kích thước chữ biểu tượng.*/
+            margin-bottom: 10px; /*Khoảng cách dưới biểu tượng.*/
         }
 
         /* SCAN LOADING */
-        #scanLoading {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 30px 0;
-            gap: 15px;
-            color: var(--accent);
-            font-size: 18px;
+        #scanLoading { /*Phần hiển thị khi quét WiFi.*/
+            display: none; /*Ẩn mặc định.*/
+            flex-direction: column; /*Hiển thị dưới dạng cột.*/
+            align-items: center; /*Căn giữa theo chiều dọc.*/
+            justify-content: center; /*Căn giữa theo chiều ngang.*/
+            margin: 30px 0; /*Khoảng cách trên dưới 30px.*/
+            gap: 15px; /*Khoảng cách giữa các phần tử con.*/
+            color: var(--accent); /*Màu nhấn.*/
+            font-size: 18px; /*Kích thước chữ.*/
         }
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid var(--accent);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
+        .spinner { /*Hiệu ứng spinner quay tròn.*/
+            border: 4px solid rgba(255, 255, 255, 0.3); /*Viền ngoài mờ.*/
+            border-top: 4px solid var(--accent); /*Viền trên màu nhấn.*/
+            border-radius: 50%; /*Bo tròn thành hình tròn.*/
+            width: 50px; /*Chiều rộng 50px.*/
+            height: 50px; /*Chiều cao 50px.*/
+            animation: spin 1s linear infinite; /*Hiệu ứng quay vô hạn.*/
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes spin { /*Định nghĩa hiệu ứng quay.*/
+            0% { transform: rotate(0deg); } /*Bắt đầu từ 0 độ.*/
+            100% { transform: rotate(360deg); } /*Kết thúc ở 360 độ.*/
         }
 
-        #connectingSection .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--accent);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+        #connectingSection .spinner { /*Spinner trong phần kết nối WiFi.*/
+            border: 4px solid #f3f3f3; /*Viền ngoài mờ.*/
+            border-top: 4px solid var(--accent); /*Viền trên màu nhấn.*/
+            border-radius: 50%; /*Bo tròn thành hình tròn.*/
+            width: 40px; /*Chiều rộng 40px.*/
+            height: 40px; /*Chiều cao 40px.*/
+            animation: spin 1s linear infinite; /*Hiệu ứng quay vô hạn.*/
+            margin-bottom: 15px; /*Khoảng cách dưới spinner.*/
         }
 
         /* WIFI SIGNAL BARS */
-        .wifi-bars {
-            display: inline-flex;
-            align-items: end;
-            gap: 2px;
-            height: 20px;
-            vertical-align: middle;
+        .wifi-bars { /*Container cho các thanh tín hiệu WiFi.*/
+            display: inline-flex; /*Hiển thị dưới dạng flex.*/
+            align-items: end; /*Căn giữa theo chiều dọc.*/
+            gap: 2px; /*Khoảng cách giữa các thanh.*/
+            height: 20px; /*Chiều cao 20px.*/
+            vertical-align: middle; /*Căn giữa theo chiều ngang.*/
         }
-        .wifi-bars .bar {
-            width: 4px;
-            border-radius: 2px;
-            background-color: rgba(128, 128, 128, 0.4);
-            transition: all 0.3s;
+        .wifi-bars .bar { /*Mỗi thanh tín hiệu WiFi.*/
+            width: 4px; /*Chiều rộng 4px.*/
+            border-radius: 2px; /*Bo góc cho thanh.*/
+            background-color: rgba(128, 128, 128, 0.4); /*Màu nền mặc định (xám nhạt).*/
+            transition: all 0.3s; /*Hiệu ứng chuyển đổi mượt mà.*/
         }
-        .wifi-bars.signal-low .bar.active { background-color: #ff6b6b; }
-        .wifi-bars.signal-medium .bar.active { background-color: #ffd93d; }
-        .wifi-bars.signal-high .bar.active { background-color: #51cf66; }
+        .wifi-bars.signal-low .bar.active { background-color: #ff6b6b; } /*Màu đỏ cho tín hiệu yếu.*/
+        .wifi-bars.signal-medium .bar.active { background-color: #ffd93d; } /*Màu vàng cho tín hiệu trung bình.*/
+        .wifi-bars.signal-high .bar.active { background-color: #51cf66; } /*Màu xanh cho tín hiệu mạnh.*/
 
-        .bar1 { height: 6px; }
-        .bar2 { height: 10px; }
-        .bar3 { height: 14px; }
-        .bar4 { height: 20px; }
+        .bar1 { height: 6px; } /*Chiều cao thanh 1*/
+        .bar2 { height: 10px; } /*Chiều cao thanh 2*/
+        .bar3 { height: 14px; } /*Chiều cao thanh 3*/
+        .bar4 { height: 20px; } /*Chiều cao thanh 4*/
 
-        footer { margin-top: 30px; font-size: 14px; opacity: 0.8; }
+        footer { margin-top: 30px; font-size: 14px; opacity: 0.8; } /*Chân trang với khoảng cách trên, kích thước chữ nhỏ và độ mờ.*/
     </style>
 </head>
 <body>
@@ -525,7 +527,7 @@
             }
         }
 
-        setInterval(refreshWiFi, 30000);
+        //setInterval(refreshWiFi, 30000);
     </script>
 </body>
 </html>

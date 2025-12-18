@@ -317,56 +317,60 @@
     </style>
 </head>
 <body>
-    <div class="theme-switch-wrapper">
-        <label class="theme-switch">
-            <input type="checkbox" id="themeCheckbox" onchange="toggleTheme()">
-            <div class="slider"></div>
+    <div class="theme-switch-wrapper"> /* NÚT GẠT SÁNG/TỐI */
+        <label class="theme-switch"> /*Nút chuyển đổi theme.*/
+            <input type="checkbox" id="themeCheckbox" onchange="toggleTheme()"> /*Checkbox ẩn để chuyển đổi theme.*/
+            <div class="slider"></div>/*Thanh trượt của nút chuyển đổi theme.*/
         </label>
     </div>
 
-    <div class="container">
+    <div class="container"> /* THẺ CHÍNH CỦA TRANG */
         <h1>📶 Cấu hình WiFi</h1>
-        <p id="subtitle">Chọn mạng và nhập mật khẩu</p>
-        <div id="formSection">
-            <button id="refreshBtn" onclick="refreshWiFi()">🔄 Làm mới danh sách</button>
+        <p id="subtitle">Chọn mạng và nhập mật khẩu</p> /* Tiêu đề phụ */
+        <div id="formSection"> /* PHẦN BIỂU MẪU KẾT NỐI WIFI */
+            <button id="refreshBtn" onclick="refreshWiFi()">🔄 Làm mới danh sách</button> /* Nút làm mới danh sách WiFi */
 
-            <div id="scanLoading">
-                <div class="spinner"></div>
+            <div id="scanLoading"> /* PHẦN HIỂN THỊ KHI ĐANG QUÉT WIFI */
+                <div class="spinner"></div> /* Hiệu ứng spinner quay tròn */
                 Đang quét WiFi...
             </div>
 
-            <form id="wifiForm">
-                <div class="wifi-dropdown">
-                    <div class="dropdown-header" onclick="toggleDropdown()">
-                        <span id="selectedNetwork">-- Chọn mạng WiFi --</span>
+            <form id="wifiForm"> /* Biểu mẫu kết nối WiFi */
+                <div class="wifi-dropdown"> /* CUSTOM DROPDOWN WIFI */
+                    <div class="dropdown-header" onclick="toggleDropdown()"> /* Phần hiển thị mạng WiFi đã chọn */
+                        <span id="selectedNetwork">-- Chọn mạng WiFi --</span> /* Tên mạng WiFi đã chọn */
                         <span></span>
                     </div>
-                    <div class="dropdown-list" id="wifiList">
+                    <div class="dropdown-list" id="wifiList"> /* Danh sách mạng WiFi */
                         <!-- Danh sách sẽ được tạo bằng JS -->
                     </div>
                 </div>
-                <input type="password" name="pass" id="passwordInput" placeholder="Mật khẩu WiFi" required>
-                <button type="submit" id="connectBtn" disabled>Kết nối</button>
+                <input type="password" name="pass" id="passwordInput" placeholder="Mật khẩu WiFi" required> /* Input mật khẩu WiFi */
+                <button type="submit" id="connectBtn" disabled>Kết nối</button> /* Nút kết nối WiFi */
             </form>
         </div>
 
-        <div id="connectingSection" class="loading-spinner" style="display:none;">
-            <div class="spinner"></div>
-            <p>Đang kết nối đến WiFi...</p>
+        <div id="connectingSection" class="loading-spinner" style="display:none;"> /* PHẦN HIỂN THỊ KHI ĐANG KẾT NỐI WIFI */
+            <div class="spinner"></div> /* Hiệu ứng spinner quay tròn */
+            <p>Đang kết nối đến WiFi...</p> /* Thông báo kết nối */
         </div>
 
-        <div id="statusSection" class="status">
-            <div class="icon" id="statusIcon"></div>
-            <div id="statusMessage"></div>
-            <button id="retryBtn" onclick="retry()" style="margin-top:20px; background:#555;">🔄 Thử lại</button>
+        <div id="statusSection" class="status"> /* PHẦN HIỂN THỊ TRẠNG THÁI KẾT NỐI WIFI */
+            <div class="icon" id="statusIcon"></div> /* Biểu tượng trạng thái */
+            <div id="statusMessage"></div> /* Thông điệp trạng thái */
+            <button id="retryBtn" onclick="retry()" style="margin-top:20px; background:#555;">🔄 Thử lại</button> 
         </div>
         <footer>Thiết bị ESP - Chế độ cấu hình</footer>
     </div>
 
     <script>
-        let selectedSSID = '';
-        let networks = [];
-
+        let selectedSSID = ''; /* Biến lưu trữ SSID đã chọn */
+        let networks = []; /* Danh sách các mạng WiFi */
+        /*
+            Chức năng: Hàm chuyển đổi giữa chế độ sáng và tối cho giao diện.
+            Cách sử dụng: Gọi hàm toggleTheme() khi checkbox thay đổi trạng thái.
+            Cách hoạt động: Khi checkbox được chọn, thêm thuộc tính data-theme="light" vào thẻ body để áp dụng chế độ sáng. Khi không được chọn, loại bỏ thuộc tính này để sử dụng chế độ tối mặc định.
+        */
         function toggleTheme() {
             const body = document.body;
             const checkbox = document.getElementById('themeCheckbox');
@@ -377,6 +381,11 @@
             }
         }
 
+        /*
+            Chức năng: Khi trang tải xong, kiểm tra trạng thái theme và cập nhật danh sách WiFi
+            Cách sử dụng: Tự động chạy khi trang được tải hoàn tất.
+            Cách hoạt động: Kiểm tra nếu thẻ body có thuộc tính data-theme, nếu có thì đánh dấu checkbox là đã chọn. Sau đó gọi hàm updateWiFiList() để lấy và hiển thị danh sách WiFi.
+        */
         window.addEventListener('load', () => {
             const checkbox = document.getElementById('themeCheckbox');
             if (document.body.hasAttribute('data-theme')) {
@@ -385,6 +394,11 @@
             updateWiFiList();
         });
 
+        /*
+            Chức năng: Tạo HTML cho biểu tượng thanh tín hiệu WiFi (4 vạch).
+            Cách hoạt động: Dựa vào mức tín hiệu (level), tạo các thanh với màu sắc tương ứng (yếu, trung bình, mạnh).
+            Trả về: Chuỗi HTML đại diện cho biểu tượng thanh tín hiệu WiFi.
+        */
         function createBars(level) {
             let signalClass = '';
             if (level <= 1) signalClass = 'signal-low';
@@ -398,6 +412,11 @@
             return barsHTML;
         }
 
+        /*
+            Chức năng: Hàm cập nhật danh sách WiFi
+            Cách sử dụng: Gọi hàm updateWiFiList() để lấy và hiển thị danh sách WiFi.
+            Cách hoạt động: Gửi yêu cầu đến endpoint /scan để quét các mạng WiFi có sẵn và cập nhật danh sách.
+        */
         function updateWiFiList() {
             const wifiList = document.getElementById('wifiList');
             wifiList.innerHTML = '<div style="padding:12px">Đang quét WiFi...</div>';
@@ -432,6 +451,10 @@
                 });
         }
 
+        /*
+            Chức năng: Xử lý khi người dùng chọn một mạng WiFi trong dropdown.
+            Cách hoạt động: Lưu SSID đã chọn, cập nhật giao diện, bật nút kết nối, đánh dấu mục được chọn trong danh sách và đóng dropdown.
+        */
         function selectNetwork(ssid, index) {
             selectedSSID = ssid;
             document.getElementById('selectedNetwork').textContent = ssid;
@@ -443,6 +466,10 @@
             document.querySelector('.dropdown-header').classList.remove('open');
         }
 
+        /*
+            Chức năng: Mở hoặc đóng dropdown danh sách WiFi.
+            Cách hoạt động: Thêm hoặc xóa class open cho header và danh sách.
+        */
         function toggleDropdown() {
             const header = document.querySelector('.dropdown-header');
             const list = document.querySelector('.dropdown-list');
@@ -450,6 +477,9 @@
             list.classList.toggle('open');
         }
 
+        /*
+            Chức năng: Đóng dropdown khi click ra ngoài vùng dropdown.
+        */
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.wifi-dropdown')) {
                 document.querySelector('.dropdown-list').classList.remove('open');
@@ -457,10 +487,18 @@
             }
         });
 
+        /*
+            Chức năng: Làm mới danh sách mạng WiFi.
+            Cách hoạt động: Gọi lại hàm updateWiFiList().
+        */
         function refreshWiFi() {
             updateWiFiList();
         }
 
+        /*
+            Chức năng: Xử lý khi người dùng gửi form kết nối WiFi.
+            Cách hoạt động: Ẩn form, hiển thị spinner, gửi SSID và mật khẩu qua API /connect, sau đó kiểm tra trạng thái.
+        */
         document.getElementById('wifiForm').addEventListener('submit', function(e) {
             e.preventDefault();
             if (!selectedSSID) return;
@@ -487,6 +525,10 @@
             });
         });
 
+        /*
+            Chức năng: Kiểm tra trạng thái kết nối WiFi sau khi gửi thông tin.
+            Cách hoạt động: Gọi API /status, cập nhật giao diện trạng thái (thành công/thất bại), hiển thị thông báo và icon phù hợp, tự động reload sau 10s nếu thành công.
+        */
         function checkStatus() {
             fetch('/status')
                 .then(r => r.json())
@@ -516,6 +558,10 @@
                 });
         }
 
+        /*
+            Chức năng: Xử lý khi người dùng nhấn nút "Thử lại" hoặc "Restart ngay".
+            Cách hoạt động: Nếu là "Restart ngay", gọi API /apoff để tắt AP mode và reload trang. Nếu là "Thử lại", quay lại form nhập thông tin.
+        */
         function retry() {
             const retryBtn = document.getElementById('retryBtn');
             if (retryBtn.textContent.includes('Restart')) {
